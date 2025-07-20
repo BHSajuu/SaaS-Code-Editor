@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { CodeBlock, Message } from '@/types';
 import AIMessage from './AIMessage';
+import { GeminiRateLimiter } from '@/lib/rateLimiter';
+import RateLimitModal from '@/components/RateLimitModal';
 
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
@@ -18,12 +20,19 @@ function CodingBuddy() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showRateLimitModal, setShowRateLimitModal] = useState(false);
+  const [rateLimitInfo, setRateLimitInfo] = useState({
+    resetTime: 0,
+    currentCount: 0,
+    maxLimit: 20
+  });
 
   // Refs for auto-scrolling and input focus
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { language } = useCodeEditorStore();
+  const rateLimiter = GeminiRateLimiter.getInstance();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -74,6 +83,17 @@ function CodingBuddy() {
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+
+    // Check rate limit before making request
+    if (!rateLimiter.canMakeRequest()) {
+      setRateLimitInfo({
+        resetTime: rateLimiter.getResetTime(),
+        currentCount: rateLimiter.getCurrentCount(),
+        maxLimit: 20
+      });
+      setShowRateLimitModal(true);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -382,6 +402,13 @@ function CodingBuddy() {
           </motion.div>
         )}
       </AnimatePresence>
+       <RateLimitModal
+        isOpen={showRateLimitModal}
+        onClose={() => setShowRateLimitModal(false)}
+        resetTime={rateLimitInfo.resetTime}
+        currentCount={rateLimitInfo.currentCount}
+        maxLimit={rateLimitInfo.maxLimit}
+        />
     </>
   );
 }
