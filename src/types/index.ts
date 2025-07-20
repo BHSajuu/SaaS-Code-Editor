@@ -78,3 +78,31 @@ export interface CodeBlock {
   code: string;
   id: string;
 }
+
+
+export interface GeminiRateLimitData {
+  count: number;
+  resetTime: number;
+}
+
+export interface GeminiState {
+  dailyUsage: number;
+  resetTime: number;
+  maxDailyLimit: number;
+  
+  // Actions
+  canMakeRequest: () => boolean;
+  incrementUsage: () => void;
+  getRemainingRequests: () => number;
+  getResetTime: () => number;
+  getCurrentCount: () => number;
+  initializeFromStorage: () => void;
+}
+
+export interface RateLimitModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  resetTime: number;
+  currentCount: number;
+  maxLimit: number;
+}

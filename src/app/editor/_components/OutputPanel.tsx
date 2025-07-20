@@ -2,24 +2,39 @@
 
 import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { AlertTriangle, CheckCircle, Clock, Copy, Loader, Sparkles, Terminal, Zap } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RunningCodeSkeleton from "./RunningCodeSkeleton";
 import toast from "react-hot-toast";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import LoginButton from "@/components/LoginButton";
 import { Button } from "@/components/ui/button";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import { useGeminiStore } from "@/store/useGeminiStore";
+import RateLimitModal from "@/components/RateLimitModal";
 
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
-
 
 function OutputPanel() {
   const { output, error, isRunning, editor } = useCodeEditorStore();
   const [isCopied, setIsCopied] = useState(false);
   const [isAIruning, setIsAIruning] = useState(false);
   const [aiFixComplete, setAiFixComplete] = useState(false);
+  const [showRateLimitModal, setShowRateLimitModal] = useState(false);
+
+  const { 
+    canMakeRequest, 
+    incrementUsage, 
+    getResetTime, 
+    getCurrentCount, 
+    maxDailyLimit,
+    initializeFromStorage 
+  } = useGeminiStore();
+   
+  
+    useEffect(() => {
+    initializeFromStorage();
+  }, [initializeFromStorage]);
 
   const hasContent = error || output;
 
@@ -35,10 +50,19 @@ function OutputPanel() {
 
   const handleAIforError = async () => {
     if (!hasContent) return;
+    
+     // Check rate limit before making request
+    if (!canMakeRequest()) {
+      setShowRateLimitModal(true);
+      return;
+    }
+
     setIsAIruning(true);
     setAiFixComplete(false);
 
     try {
+      incrementUsage();
+
       const errorMsg = error || "";
       const language = localStorage.getItem("editor-language") || "javascript";
       const code = localStorage.getItem(`editor-code-${language}`);
@@ -103,7 +127,8 @@ function OutputPanel() {
 
 
   return (
-    <div className="relative bg-[#181825] rounded-xl p-4 ring-1 ring-gray-800/50">
+  <>
+     <div className="relative bg-[#181825] rounded-xl p-4 ring-1 ring-gray-800/50">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -294,7 +319,17 @@ function OutputPanel() {
         </div>
       </div>
     </div>
-  );
+    <div className="fixed bottom-0.5  right-[32%] z-50 ">
+      <RateLimitModal
+        isOpen={showRateLimitModal} 
+        onClose={() => setShowRateLimitModal(false)}
+        resetTime={getResetTime()}
+        currentCount={getCurrentCount()}
+        maxLimit={maxDailyLimit}
+      />
+    </div>
+  </>
+  ); 
 }
 
 export default OutputPanel;

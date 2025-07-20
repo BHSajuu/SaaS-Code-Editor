@@ -9,8 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { CodeBlock, Message } from '@/types';
 import AIMessage from './AIMessage';
-import { GeminiRateLimiter } from '@/lib/rateLimiter';
 import RateLimitModal from '@/components/RateLimitModal';
+import { useGeminiStore } from '@/store/useGeminiStore';
 
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
@@ -21,18 +21,20 @@ function CodingBuddy() {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
-  const [rateLimitInfo, setRateLimitInfo] = useState({
-    resetTime: 0,
-    currentCount: 0,
-    maxLimit: 20
-  });
 
   // Refs for auto-scrolling and input focus
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { language } = useCodeEditorStore();
-  const rateLimiter = GeminiRateLimiter.getInstance();
+    const { 
+    canMakeRequest, 
+    incrementUsage, 
+    getResetTime, 
+    getCurrentCount, 
+    maxDailyLimit,
+    initializeFromStorage 
+  } = useGeminiStore();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -45,6 +47,12 @@ function CodingBuddy() {
       inputRef.current.focus();
     }
   }, [isOpen]);
+ 
+  // Initialize from storage on mount
+  useEffect(() => {
+    initializeFromStorage();
+  }, [initializeFromStorage]);
+
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -85,15 +93,11 @@ function CodingBuddy() {
     if (!inputMessage.trim() || isLoading) return;
 
     // Check rate limit before making request
-    if (!rateLimiter.canMakeRequest()) {
-      setRateLimitInfo({
-        resetTime: rateLimiter.getResetTime(),
-        currentCount: rateLimiter.getCurrentCount(),
-        maxLimit: 20
-      });
+    if (!canMakeRequest()) {
       setShowRateLimitModal(true);
       return;
     }
+
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -102,13 +106,13 @@ function CodingBuddy() {
       timestamp: new Date(),
     };
 
-    // Add user message and clear input
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      // Configure Gemini model for coding assistance
+        incrementUsage();
+      
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash-001",
         generationConfig: {
@@ -270,7 +274,7 @@ function CodingBuddy() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mt-96 fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="mt-96 fixed inset-0  z-50 flex items-center justify-center p-4"
             onClick={() => setIsOpen(false)}
           >
             <motion.div 
@@ -402,13 +406,15 @@ function CodingBuddy() {
           </motion.div>
         )}
       </AnimatePresence>
-       <RateLimitModal
-        isOpen={showRateLimitModal}
-        onClose={() => setShowRateLimitModal(false)}
-        resetTime={rateLimitInfo.resetTime}
-        currentCount={rateLimitInfo.currentCount}
-        maxLimit={rateLimitInfo.maxLimit}
+       <div className='fixed z-50 top-[80%] left-[32%]'>
+         <RateLimitModal
+          isOpen={showRateLimitModal}
+          onClose={() => setShowRateLimitModal(false)}
+          resetTime={getResetTime()}
+          currentCount={getCurrentCount()}
+          maxLimit={maxDailyLimit}
         />
+       </div>
     </>
   );
 }

@@ -1,16 +1,11 @@
 "use client";
 
+import { RateLimitModalProps } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Zap, AlertTriangle, Calendar, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
-interface RateLimitModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  resetTime: number;
-  currentCount: number;
-  maxLimit: number;
-}
+
 
 function RateLimitModal({ isOpen, onClose, resetTime, currentCount, maxLimit }: RateLimitModalProps) {
   const [timeUntilReset, setTimeUntilReset] = useState("");
@@ -47,7 +42,7 @@ function RateLimitModal({ isOpen, onClose, resetTime, currentCount, maxLimit }: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="mt-96 fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className=" inset-0  flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
