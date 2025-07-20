@@ -29,6 +29,9 @@ const githubDarkTheme = {
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const {editor} = useCodeEditorStore();
+  
+  // Check if this is the initial welcome message
+  const isInitialMessage = message.id === '1' && message.content.includes("Hello! I'm your AI coding assistant");
  
 
     // Insert code directly into the editor
@@ -63,19 +66,60 @@ const githubDarkTheme = {
 
   return (
     <div className="space-y-5">
-      {/* Render bullet point text content only */}
+      {/* Render content based on message type */}
       {content.trim() && (
-        <ul className="list-disc list-inside text-gray-300 leading-relaxed space-y-2">
-          {content.split('\n').map((line, index) => {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('•')) {
-              return (
-                <li key={index} className="ml-4">{trimmed.substring(1).trim()}</li>
-              );
-            }
-            return null; // Ignore non-bullet lines
-          })}
-        </ul>
+        isInitialMessage ? (
+          // For initial message, render full content with proper formatting
+          <div className="text-gray-300 leading-relaxed space-y-3">
+            {content.split('\n\n').map((paragraph, index) => {
+              if (paragraph.includes('•')) {
+                // This is the bullet points section
+                return (
+                  <ul key={index} className="list-disc list-inside space-y-2 ml-4">
+                    {paragraph.split('\n').map((line, lineIndex) => {
+                      const trimmed = line.trim();
+                      if (trimmed.startsWith('•')) {
+                        return (
+                          <li key={lineIndex} className="ml-4">{trimmed.substring(1).trim()}</li>
+                        );
+                      }
+                      return null;
+                    })}
+                  </ul>
+                );
+              } else {
+                // Regular paragraph content
+                return (
+                  <p key={index} className="text-gray-300">
+                    {paragraph.replace(/\*\*(.*?)\*\*/g, '<strong class="text-blue-400 font-semibold">$1</strong>').split('<strong').map((part, i) => {
+                      if (i === 0) return part;
+                      const [strongPart, ...rest] = part.split('</strong>');
+                      return (
+                        <span key={i}>
+                          <strong className="text-blue-400 font-semibold">{strongPart.replace(' class="text-blue-400 font-semibold">', '')}</strong>
+                          {rest.join('</strong>')}
+                        </span>
+                      );
+                    })}
+                  </p>
+                );
+              }
+            })}
+          </div>
+        ) : (
+          // For AI responses, render only bullet points
+          <ul className="list-disc list-inside text-gray-300 leading-relaxed space-y-2">
+            {content.split('\n').map((line, index) => {
+              const trimmed = line.trim();
+              if (trimmed.startsWith('•')) {
+                return (
+                  <li key={index} className="ml-4">{trimmed.substring(1).trim()}</li>
+                );
+              }
+              return null; // Ignore non-bullet lines
+            })}
+          </ul>
+        )
       )}
 
       {/* Render code blocks */}
@@ -132,4 +176,4 @@ const githubDarkTheme = {
 };
 
 
-export default AIMessage
+export default AIMessage;
