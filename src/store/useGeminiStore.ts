@@ -1,7 +1,7 @@
 import { GeminiRateLimitData, GeminiState } from "@/types";
 import { create } from "zustand";
 
-const DAILY_LIMIT = 1;
+const DAILY_LIMIT = 20;
 const RATE_LIMIT_KEY = 'gemini-api-rate-limit';
 
 const getTomorrowMidnight = (): number => {
