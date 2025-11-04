@@ -131,6 +131,7 @@ function CodingBuddy() {
       - Start with bullet points explaining the concept clearly (no headings, no paragraphs, no numbered lists).
       - Then provide a single complete code block with proper syntax highlighting.
       - Include comments in the code when helpful.
+      - Include a printing statement to show output where applicable.
       - Do NOT include any heading or title in the response.
       - Do NOT split the code into multiple blocks.
       - Do NOT include any paragraph or numbered explanation.
