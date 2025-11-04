@@ -2,9 +2,9 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import SessionUI from "./_components/SessionUI";
 
 interface SessionPageProps {
-  params: {
+  params: Promise<{
     sessionId: Id<"sessions">;
-  };
+  }>;
 }
 
 /**
@@ -12,6 +12,7 @@ interface SessionPageProps {
  * Its only job is to get the sessionId from the URL params
  * and pass it to the client-side SessionUI component.
  */
-export default function SessionPage({ params }: SessionPageProps) {
-  return <SessionUI sessionId={params.sessionId} />;
+export default async function SessionPage({ params }: SessionPageProps) {
+  const { sessionId } = await params;
+  return <SessionUI sessionId={sessionId} />;
 }
