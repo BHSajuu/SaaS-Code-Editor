@@ -17,6 +17,7 @@ import type * as codeExecutions from "../codeExecutions.js";
 import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as lemonSqueezy from "../lemonSqueezy.js";
+import type * as sessions from "../sessions.js";
 import type * as snippets from "../snippets.js";
 import type * as users from "../users.js";
 
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   feedback: typeof feedback;
   http: typeof http;
   lemonSqueezy: typeof lemonSqueezy;
+  sessions: typeof sessions;
   snippets: typeof snippets;
   users: typeof users;
 }>;

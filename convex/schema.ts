@@ -52,4 +52,20 @@ export default defineSchema({
       content: v.string(),
   }).index("by_user_id", ["userId"])
     .index("by_rating", ["rating"]),
+
+  sessions: defineTable({
+    code: v.string(),
+    language: v.string(),
+    ownerId: v.string(),
+    ownerName: v.string(),
+    activeUsers: v.array(
+      v.object({
+        userId: v.string(),
+        userName: v.string(),
+        userImageUrl: v.string(),
+        cursor: v.optional(v.any()), 
+        selection: v.optional(v.any()),
+      })
+    ),
+  }).index("by_ownerId", ["ownerId"]),
 });

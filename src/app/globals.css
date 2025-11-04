@@ -213,3 +213,39 @@
   .animate-bounce {
     animation: bounce 1.4s infinite ease-in-out both;
   }
+
+
+
+/* We create 3 color sets. We'll assign one to each remote user.
+  This allows for up to 3 unique colors, and then it will repeat.
+*/
+
+/* --- User Color 1 (Blue) --- */
+.remote-cursor-user-1 {
+  background-color: #007bff;
+  border-left: 2px solid #007bff;
+  width: 2px !important; /* Force cursor width */
+}
+.remote-selection-user-1 {
+  background-color: #007bff33; /* 20% opacity blue */
+}
+
+/* --- User Color 2 (Green) --- */
+.remote-cursor-user-2 {
+  background-color: #28a745;
+  border-left: 2px solid #28a745;
+  width: 2px !important;
+}
+.remote-selection-user-2 {
+  background-color: #28a74533;
+}
+
+/* --- User Color 3 (Orange) --- */
+.remote-cursor-user-0 {
+  background-color: #fd7e14;
+  border-left: 2px solid #fd7e14;
+  width: 2px !important;
+}
+.remote-selection-user-0 {
+  background-color: #fd7e1433;
+}

@@ -10,6 +10,7 @@ import RunButton from "./RunButton";
 import HeaderProfileBtn from "./HeaderProfileBtn";
 import Image from "next/image";
 import CodingBuddy from "./CodingBuddy";
+import StartSessionButton from "./StartSessionButton";
 
 async function Header() {
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -103,6 +104,7 @@ async function Header() {
           )}
 
           <SignedIn>
+            <StartSessionButton />
             <RunButton />
           </SignedIn>
 
