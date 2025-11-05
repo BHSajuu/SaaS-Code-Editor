@@ -63,7 +63,7 @@ function Contact() {
   };
 
   return (
-      <>
+      <div className="bg-[#0a0a0f]">
       <NavigationHeader />
       <section id="contact" className="min-h-screen bg-[#0a0a0f] pt-12 pb-32">
         <div className="relative max-w-3xl mx-auto px-4">
@@ -144,7 +144,7 @@ function Contact() {
         </div>
       </section>
  
-      </>
+      </div>
   );
 }
 
