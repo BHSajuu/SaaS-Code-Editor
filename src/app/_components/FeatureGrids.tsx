@@ -1,12 +1,32 @@
-import { Code2, Palette, Shield, Sparkles, Users, Zap } from "lucide-react"
+import { Code2, Palette, Radio, Sparkles, Users, Zap } from "lucide-react"
 
 const FEATURES = [
+    {
+    icon: Sparkles,
+    title: "AI-Powered",
+    description: "Get intelligent code suggestions and error detection powered by advanced AI.",
+    gradient: "from-indigo-500 to-purple-500",
+
+  },
+  {
+    icon: Radio,
+    title: "Real-time Collaboration",
+    description: "Code together with shared sessions, live cursors, and synced editing.",
+    gradient: "from-teal-500 to-sky-500", 
+  },
   {
     icon: Code2,
     title: "Multi-Language Support",
     description: "Write and execute code in JavaScript, Python, Java, C++, Go, Rust, and more.",
     gradient: "from-blue-500 to-cyan-500",
    
+  },
+    {
+    icon: Users,
+    title: "Community Driven",
+    description: "Share code snippets, collaborate with developers, and learn from the community.",
+    gradient: "from-green-500 to-emerald-500",
+    
   },
   {
     icon: Palette,
@@ -22,27 +42,7 @@ const FEATURES = [
     gradient: "from-yellow-500 to-orange-500",
    
   },
-  {
-    icon: Users,
-    title: "Community Driven",
-    description: "Share code snippets, collaborate with developers, and learn from the community.",
-    gradient: "from-green-500 to-emerald-500",
-    
-  },
-  {
-    icon: Shield,
-    title: "Secure & Private",
-    description: "Your code is protected with enterprise-grade security and privacy controls.",
-    gradient: "from-red-500 to-rose-500",
-   
-  },
-  {
-    icon: Sparkles,
-    title: "AI-Powered",
-    description: "Get intelligent code suggestions and error detection powered by advanced AI.",
-    gradient: "from-indigo-500 to-purple-500",
 
-  },
 ]
 
 function FeatureGrids() {

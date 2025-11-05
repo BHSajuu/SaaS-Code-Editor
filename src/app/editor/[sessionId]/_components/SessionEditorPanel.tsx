@@ -78,7 +78,10 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     
     const isOwner = session.ownerId === user.id;
     const isPublic = session.isPublic;
-    const readOnly = !isOwner && !isPublic;
+
+    const isAllowed = session.allowedUsers.includes(user.id);
+
+    const readOnly = !isOwner && !isPublic && !isAllowed;
 
     setIsReadOnly(readOnly);
     editorRef.current.updateOptions({ readOnly: readOnly });
