@@ -10,7 +10,11 @@ export default defineSchema({
     proSince: v.optional(v.number()),
     lemonSqueezyCustomerId: v.optional(v.string()),
     lemonSqueezyOrderId: v.optional(v.string()),
-  }).index("by_user_id", ["userId"]),
+  }).index("by_user_id", ["userId"])
+    .searchIndex("search_name_email", {
+      searchField: "name",
+      filterFields: ["email"],
+    }),
 
   codeExecutions: defineTable({
     userId: v.string(),
@@ -59,6 +63,7 @@ export default defineSchema({
     ownerId: v.string(),
     ownerName: v.string(),
     isPublic: v.boolean(),
+    allowedUsers: v.array(v.string()),
     activeUsers: v.array(
       v.object({
         userId: v.string(),

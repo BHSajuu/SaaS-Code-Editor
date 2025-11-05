@@ -69,3 +69,34 @@ export const upgradeToPro = mutation({
     return { success: true };
   },
 });
+
+export const searchUsers = query({
+  args: {
+    query: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.query.length < 2) {
+      return [];
+    }
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return []; 
+    }
+    
+    const users = await ctx.db
+      .query("users")
+      .withSearchIndex("search_name_email", (q) =>
+        q.search("name", args.query).eq("email", args.query)
+      )
+      .take(5);
+
+    return users.filter((user) => user.userId !== identity.subject);
+  },
+});
+
+export const getUsers = query({
+  handler: async (ctx) => {
+    return await ctx.db.query("users").collect();
+  },
+});

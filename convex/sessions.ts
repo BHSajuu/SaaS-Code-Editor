@@ -1,5 +1,7 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 
 export const get = query({
@@ -43,6 +45,7 @@ export const createSession = mutation({
       ownerName: user.name,
       activeUsers: [], 
       isPublic: false,
+      allowedUsers: [],
     });
 
     return sessionId;
@@ -112,6 +115,27 @@ export const leaveSession = mutation({
   },
 });
 
+
+async function checkPermission(
+  ctx: QueryCtx | MutationCtx,
+  sessionId: Id<"sessions">,
+  identity: { subject: string }
+) {
+  const session = await ctx.db.get(sessionId);
+  if (!session) {
+    throw new ConvexError("Session not found");
+  }
+
+  // Check if user has permission
+  const hasPermission =
+    session.ownerId === identity.subject ||
+    session.isPublic ||
+    session.allowedUsers.includes(identity.subject);
+  
+  return { session, hasPermission };
+}
+
+
 export const updateCode = mutation({
   args: {
     sessionId: v.id("sessions"),
@@ -123,12 +147,8 @@ export const updateCode = mutation({
       throw new ConvexError("Not authenticated");
     }
 
-    const session = await ctx.db.get(args.sessionId);
-    if (!session) {
-      throw new ConvexError("Session not found");
-    }
-
-    if (session.ownerId !== identity.subject && !session.isPublic) {
+    const { hasPermission } = await checkPermission(ctx, args.sessionId, identity);
+    if (!hasPermission) {
       throw new ConvexError("You don't have permission to edit this session.");
     }
 
@@ -150,13 +170,9 @@ export const updateUserActivity = mutation({
       throw new ConvexError("Not authenticated");
     }
 
-    const session = await ctx.db.get(args.sessionId);
-    if (!session) {
-      throw new ConvexError("Session not found");
-    }
-     
-    if (session.ownerId !== identity.subject && !session.isPublic) {
-      return; 
+    const { session, hasPermission } = await checkPermission(ctx, args.sessionId, identity);
+    if (!hasPermission) {
+      return; // Silently fail
     }
 
     // Find the current user in the activeUsers array
@@ -206,5 +222,91 @@ export const updateSessionAccess = mutation({
     }
 
     await ctx.db.patch(args.sessionId, { isPublic: args.isPublic });
+  },
+});
+
+
+export const addUserToSession = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    userId: v.string(), // The userId of the user to add
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new ConvexError("Session not found");
+    }
+
+    if (session.ownerId !== identity.subject) {
+      throw new ConvexError("Only the session owner can invite users.");
+    }
+
+    if (session.allowedUsers.includes(args.userId)) {
+      return;
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      allowedUsers: [...session.allowedUsers, args.userId],
+    });
+  },
+});
+
+export const removeUserFromSession = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new ConvexError("Session not found");
+    }
+
+    if (session.ownerId !== identity.subject) {
+      throw new ConvexError("Only the session owner can remove users.");
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      allowedUsers: session.allowedUsers.filter((id) => id !== args.userId),
+    });
+  },
+});
+
+export const sendEmailInvite = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new ConvexError("Session not found");
+    }
+
+    if (session.ownerId !== identity.subject) {
+      throw new ConvexError("Only the session owner can send invites.");
+    }
+
+    
+    await ctx.scheduler.runAfter(0, internal.email.sendInvite, {
+      sessionUrl: args.sessionId, 
+      toEmail: args.email,
+      fromName: identity.name ?? "A fellow developer",
+    });
   },
 });
