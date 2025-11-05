@@ -31,9 +31,13 @@ function LiveSession({ sessionId }: { sessionId: Id<"sessions"> }) {
       <div className="max-w-[1800px] mx-auto p-4">
         <SessionHeader sessionId={sessionId} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <SessionEditorPanel sessionId={sessionId} />
-          <OutputPanel />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+              <SessionEditorPanel sessionId={sessionId} />
+          </div>
+          <div className="lg:col-span-1">
+              <OutputPanel />
+          </div>
         </div>
       </div>
     </div>

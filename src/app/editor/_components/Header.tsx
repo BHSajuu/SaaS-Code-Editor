@@ -1,5 +1,7 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { ConvexHttpClient } from "convex/browser";
+"use client"; 
+
+import { useUser } from "@clerk/nextjs"; 
+import { useQuery } from "convex/react"; 
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
 import {Code2, Sparkles } from "lucide-react";
@@ -12,12 +14,11 @@ import Image from "next/image";
 import CodingBuddy from "./CodingBuddy";
 import StartSessionButton from "./StartSessionButton";
 
-async function Header() {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const user = await currentUser();
+function Header() { 
 
-  const convexUser = await convex.query(api.users.getUser, {
-    userId: user?.id || "",
+  const { user } = useUser();
+  const convexUser = useQuery(api.users.getUser, {
+    userId: user?.id || "", 
   });
 
   return (
@@ -51,7 +52,7 @@ async function Header() {
             </div>
 
             <div className="flex flex-col">
-              <span className="block text-2xl font-semibold bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400 text-transparent bg-clip-text">
+              <span className="block text-lg font-semibold bg-gradient-to-r from-blue-400 via-blue-300 to-purple-400 text-transparent bg-clip-text">
                 CodeNexta
               </span>
               <span className="block text-xs text-blue-400/60 font-medium">

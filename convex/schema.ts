@@ -11,9 +11,8 @@ export default defineSchema({
     lemonSqueezyCustomerId: v.optional(v.string()),
     lemonSqueezyOrderId: v.optional(v.string()),
   }).index("by_user_id", ["userId"])
-    .searchIndex("search_name_email", {
+    .searchIndex("search_name", {
       searchField: "name",
-      filterFields: ["email"],
     }),
 
   codeExecutions: defineTable({
@@ -29,7 +28,7 @@ export default defineSchema({
     title: v.string(),
     language: v.string(),
     code: v.string(),
-    userName: v.string(), // store user's name for easy access
+    userName: v.string(),
   }).index("by_user_id", ["userId"]),
 
   snippetComments: defineTable({

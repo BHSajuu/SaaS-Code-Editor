@@ -86,9 +86,7 @@ export const searchUsers = query({
     
     const users = await ctx.db
       .query("users")
-      .withSearchIndex("search_name_email", (q) =>
-        q.search("name", args.query).eq("email", args.query)
-      )
+      .withSearchIndex("search_name", (q) => q.search("name", args.query))
       .take(5);
 
     return users.filter((user) => user.userId !== identity.subject);

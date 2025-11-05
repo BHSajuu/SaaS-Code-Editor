@@ -13,6 +13,10 @@ import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { editor as MonacoEditor } from "monaco-editor";
 import { useUser } from "@clerk/nextjs";
+import { ShareIcon, TypeIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import ShareSnippetDialog from "../../_components/ShareSnippetDialog";
+
 
 const DynamicEditor = dynamic(
   () => import("@monaco-editor/react").then((mod) => mod.Editor),
@@ -40,7 +44,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
   
 
   const [isReadOnly, setIsReadOnly] = useState(false);
-
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   const language = session?.language || "javascript";
   const sessionCode = session?.code;
@@ -229,6 +233,13 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     };
   }, []);
 
+  const handleFontSizeChange = (newSize: number) => {
+    const size = Math.min(Math.max(newSize, 12), 24);
+    setFontSize(size);
+    localStorage.setItem("editor-font-size", size.toString());
+  };
+
+
   if (!mounted || !session) return <EditorPanelSkeleton />;
 
   return (
@@ -244,6 +255,38 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
               <p className="text-xs text-gray-500">You are in a live session</p>
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            {/* Font Size Slider */}
+            <div className="flex items-center gap-3 px-3 py-2 bg-[#1e1e2e] rounded-lg ring-1 ring-white/5">
+              <TypeIcon className="size-4 text-gray-400" />
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="12"
+                  max="24"
+                  value={fontSize}
+                  onChange={(e) => handleFontSizeChange(parseInt(e.target.value))}
+                  className="w-20 h-1 bg-gray-600 rounded-lg cursor-pointer"
+                />
+                <span className="text-sm font-medium text-gray-400 min-w-[2rem] text-center">
+                  {fontSize}
+                </span>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsShareDialogOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg overflow-hidden bg-gradient-to-r
+               from-blue-500 to-blue-600 opacity-90 hover:opacity-100 transition-opacity"
+            >
+              <ShareIcon className="size-4 text-white" />
+              <span className="text-sm font-medium text-white ">Share</span>
+            </motion.button>
+          </div>
+
         </div>
 
         <div className="relative group rounded-xl overflow-hidden ring-1 ring-white/[0.05]">
@@ -266,6 +309,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
           />
         </div>
       </div>
+       {isShareDialogOpen && <ShareSnippetDialog onClose={() => setIsShareDialogOpen(false)} />}
     </div>
   );
 }

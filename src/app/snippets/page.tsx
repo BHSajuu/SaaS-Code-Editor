@@ -18,7 +18,7 @@ function SnippetsPage() {
   // loading state
   if (snippets === undefined) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-950/50">
         <NavigationHeader />
         <SnippetsPageSkeleton />
       </div>

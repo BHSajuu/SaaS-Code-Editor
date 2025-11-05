@@ -7,9 +7,9 @@ import Link from "next/link";
 
 function NavigationHeader() {
   return (
-    <div className="sticky top-0 z-50 py-2 rounded-b-4xl w-full border-b border-gray-800/50 bg-gray-950/50 backdrop-blur-xl backdrop-saturate-150">
+    <div className="sticky ml-16 lg:ml-50 top-5 z-50 py-3 border-t-2 border-blue-300/30 rounded-full w-[85%] lg:w-[75%] bg-gray-950/50 backdrop-blur-sm  shadow-lg hover:shadow-2xl shadow-blue-400/30 hover:shadow-blue-300/30 transition-all duration-300">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-6 lg:px-16">
         <div className="relative h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}
