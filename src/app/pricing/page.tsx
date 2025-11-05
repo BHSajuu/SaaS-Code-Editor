@@ -1,5 +1,6 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { ConvexHttpClient } from "convex/browser";
+"use client";
+
+
 import { api } from "../../../convex/_generated/api";
 import ProPlanView from "./_components/ProPlanView";
 import NavigationHeader from "@/components/NavigationHeader";
@@ -7,17 +8,16 @@ import { ENTERPRISE_FEATURES, FEATURES } from "./_constants";
 import { Star } from "lucide-react";
 import FeatureCategory from "./_components/FeatureCategory";
 import FeatureItem from "./_components/FeatureItem";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import UpgradeButton from "./_components/UpgradeButton";
 import LoginButton from "@/components/LoginButton";
+import { useQuery } from "convex/react";
 
-async function PricingPage() {
-  const user = await currentUser();
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const convexUser = await convex.query(api.users.getUser, {
+function PricingPage() {
+ const { user } = useUser();
+  const convexUser = useQuery(api.users.getUser, {
     userId: user?.id || "",
   });
-
   if (convexUser?.isPro) return <ProPlanView />;
 
   return (
@@ -92,13 +92,13 @@ async function PricingPage() {
                   </div>
                   <h2 className="text-3xl font-semibold text-white mb-4">Lifetime Pro Access</h2>
                   <div className="flex items-baseline justify-center gap-2 mb-4">
-                    <span className="text-2xl text-gray-400">$</span>
+                    <span className="text-2xl text-gray-400">₹</span>
                     <span className="text-6xl font-semibold bg-gradient-to-r from-gray-100 to-gray-300 text-transparent bg-clip-text">
-                      39
+                      99
                     </span>
                     <span className="text-xl text-gray-400">one-time</span>
                   </div>
-                  <p className="text-gray-400 text-lg">Unlock the full potential of CodeCraft</p>
+                  <p className="text-gray-400 text-lg">Unlock the full potential of CodeNexta</p>
                 </div>
 
                 {/* Features grid */}

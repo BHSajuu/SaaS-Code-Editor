@@ -1,3 +1,6 @@
+"use client";
+
+
 import NavigationHeader from "@/components/NavigationHeader";
 import { ArrowRight, Command, Star } from "lucide-react";
 import Link from "next/link";
@@ -26,7 +29,7 @@ function ProPlanView() {
               </p>
 
               <Link
-                href="/"
+                href="/editor"
                 className="inline-flex items-center justify-center gap-2 w-full px-8 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 text-white rounded-xl transition-all duration-200 border border-gray-800 hover:border-blue-500/50 group"
               >
                 <Command className="w-5 h-5 text-blue-400" />

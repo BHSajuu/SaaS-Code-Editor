@@ -1,15 +1,15 @@
-import { Boxes, Globe, RefreshCcw, Shield } from "lucide-react";
+import { Boxes, Globe, Radio, RefreshCcw, Shield, Sparkles } from "lucide-react";
 
 export const ENTERPRISE_FEATURES = [
   {
-    icon: Globe,
-    label: "Global Infrastructure",
-    desc: "Lightning-fast execution across worldwide edge nodes",
+    icon: Radio,
+    label: "Real-time Collaboration",
+    desc: "Code together with shared sessions, live cursors, and synced editing.",
   },
   {
-    icon: Shield,
-    label: "Enterprise Security",
-    desc: "Bank-grade encryption and security protocols",
+    icon: Sparkles,
+    label: "AI-Powered",
+    desc: "Get intelligent code suggestions and error detection powered by advanced AI.",
   },
   {
     icon: RefreshCcw,
