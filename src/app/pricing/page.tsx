@@ -115,8 +115,8 @@ function PricingPage() {
                     ))}
                   </FeatureCategory>
 
-                  <FeatureCategory label="Deployment">
-                    {FEATURES.deployment.map((feature, idx) => (
+                  <FeatureCategory label="Community">
+                    {FEATURES.community.map((feature, idx) => (
                       <FeatureItem key={idx}>{feature}</FeatureItem>
                     ))}
                   </FeatureCategory>

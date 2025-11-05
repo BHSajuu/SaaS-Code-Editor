@@ -25,21 +25,25 @@ export const ENTERPRISE_FEATURES = [
 
 export const FEATURES = {
   development: [
-    "Advanced AI",
-    "Custom theme builder",
-    "Integrated debugging tools",
-    "Multi-language support",
+    "AI-powered error fixing (Gemini API)",
+    "AI Coding Buddy (Gemini API)",
+    "10+ Language Support (JS, Python, Java, etc.)",
+    "5 VSCode Themes (VS Dark, Monokai, etc.)",
+    "Customizable Font Size",
+    "Smart Output Handling (Success & Error states)",
   ],
   collaboration: [
-    "Real-time pair programming",
-    "Team workspaces",
-    "Version control integration",
-    "Code review tools",
+    "Real-time pair programming (Live Sessions)",
+    "Share session by link or email",
+    "Public/Private session controls",
+    "Live cursors and activity tracking",
   ],
-  deployment: [
-    "One-click deployment",
-    "CI/CD integration",
-    "Container support",
-    "Custom domain mapping",
+  community: [
+    "Community code snippet sharing",
+    "Snippet starring system",
+    "Advanced snippet search & filtering",
+    "Snippet commenting/discussion",
+    "Personal profile with execution history",
+    "Comprehensive user statistics",
   ],
 };
