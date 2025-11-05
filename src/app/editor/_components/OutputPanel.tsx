@@ -2,7 +2,7 @@
 
 import { useCodeEditorStore } from "@/store/useCodeEditorStore";
 import { AlertTriangle, CheckCircle, Clock, Copy, Loader, Sparkles, Terminal, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RunningCodeSkeleton from "./RunningCodeSkeleton";
 import toast from "react-hot-toast";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
@@ -28,13 +28,8 @@ function OutputPanel() {
     getResetTime, 
     getCurrentCount, 
     maxDailyLimit,
-    initializeFromStorage 
   } = useGeminiStore();
    
-  
-    useEffect(() => {
-    initializeFromStorage();
-  }, [initializeFromStorage]);
 
   const hasContent = error || output;
 

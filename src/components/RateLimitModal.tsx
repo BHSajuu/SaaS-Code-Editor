@@ -42,7 +42,7 @@ function RateLimitModal({ isOpen, onClose, resetTime, currentCount, maxLimit }: 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className=" inset-0  flex items-center justify-center p-4"
+          className=" inset-0  flex items-center justify-center -mb-1 lg:p-4 lg:mb-16 lg:mr-5"
           onClick={onClose}
         >
           <motion.div

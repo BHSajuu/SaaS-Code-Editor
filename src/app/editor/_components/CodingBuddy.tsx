@@ -33,7 +33,6 @@ function CodingBuddy() {
     getResetTime, 
     getCurrentCount, 
     maxDailyLimit,
-    initializeFromStorage 
   } = useGeminiStore();
 
   // Auto-scroll to bottom when new messages are added
@@ -48,11 +47,6 @@ function CodingBuddy() {
     }
   }, [isOpen]);
  
-  // Initialize from storage on mount
-  useEffect(() => {
-    initializeFromStorage();
-  }, [initializeFromStorage]);
-
 
   useEffect(() => {
     if (messages.length === 0) {

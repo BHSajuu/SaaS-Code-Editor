@@ -1,7 +1,7 @@
 import { GeminiRateLimitData, GeminiState } from "@/types";
 import { create } from "zustand";
 
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 5;
 const RATE_LIMIT_KEY = 'gemini-api-rate-limit';
 
 const getTomorrowMidnight = (): number => {
@@ -11,14 +11,14 @@ const getTomorrowMidnight = (): number => {
   return tomorrow.getTime();
 };
 
-const getRateLimitDataFromStorage = (): GeminiRateLimitData => {
+const getInitialState = (): Omit<GeminiRateLimitData, 'count'> & { dailyUsage: number } => {
   if (typeof window === 'undefined') {
-    return { count: 0, resetTime: getTomorrowMidnight() };
+    return { dailyUsage: 0, resetTime: getTomorrowMidnight() };
   }
   
   const stored = localStorage.getItem(RATE_LIMIT_KEY);
   if (!stored) {
-    return { count: 0, resetTime: getTomorrowMidnight() };
+    return { dailyUsage: 0, resetTime: getTomorrowMidnight() };
   }
   
   try {
@@ -26,14 +26,16 @@ const getRateLimitDataFromStorage = (): GeminiRateLimitData => {
     
     // Check if we need to reset (new day)
     if (Date.now() > data.resetTime) {
-      return { count: 0, resetTime: getTomorrowMidnight() };
+      return { dailyUsage: 0, resetTime: getTomorrowMidnight() };
     }
     
-    return data;
+    // Return state compatible with the store
+    return { dailyUsage: data.count, resetTime: data.resetTime };
   } catch {
-    return { count: 0, resetTime: getTomorrowMidnight() };
+    return { dailyUsage: 0, resetTime: getTomorrowMidnight() };
   }
 };
+
 
 const saveRateLimitDataToStorage = (data: GeminiRateLimitData): void => {
   if (typeof window !== 'undefined') {
@@ -41,71 +43,82 @@ const saveRateLimitDataToStorage = (data: GeminiRateLimitData): void => {
   }
 };
 
-export const useGeminiStore = create<GeminiState>((set, get) => ({
-  dailyUsage: 0,
-  resetTime: getTomorrowMidnight(),
-  maxDailyLimit: DAILY_LIMIT,
 
-  initializeFromStorage: () => {
-    const data = getRateLimitDataFromStorage();
-    set({
-      dailyUsage: data.count,
-      resetTime: data.resetTime,
-    });
-  },
 
-  canMakeRequest: () => {
-    const { dailyUsage, maxDailyLimit, resetTime } = get();
-    
-    // Check if we need to reset
-    if (Date.now() > resetTime) {
-      const newResetTime = getTomorrowMidnight();
-      set({ dailyUsage: 0, resetTime: newResetTime });
-      saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
-      return true;
-    }
-    
-    return dailyUsage < maxDailyLimit;
-  },
+export const useGeminiStore = create<GeminiState>((set, get) => {
 
-  incrementUsage: () => {
-    const { dailyUsage, resetTime } = get();
-    const newCount = dailyUsage + 1;
-    
-    set({ dailyUsage: newCount });
-    saveRateLimitDataToStorage({ count: newCount, resetTime });
-  },
+  const initialState = getInitialState();
 
-  getRemainingRequests: () => {
-    const { dailyUsage, maxDailyLimit, resetTime } = get();
-    
-    // Check if we need to reset
-    if (Date.now() > resetTime) {
-      const newResetTime = getTomorrowMidnight();
-      set({ dailyUsage: 0, resetTime: newResetTime });
-      saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
-      return maxDailyLimit;
-    }
-    
-    return Math.max(0, maxDailyLimit - dailyUsage);
-  },
+  return {
+    ...initialState, 
+    maxDailyLimit: DAILY_LIMIT,
 
-  getResetTime: () => {
-    const { resetTime } = get();
-    return resetTime;
-  },
 
-  getCurrentCount: () => {
-    const { dailyUsage, resetTime } = get();
-    
-    // Check if we need to reset
-    if (Date.now() > resetTime) {
-      const newResetTime = getTomorrowMidnight();
-      set({ dailyUsage: 0, resetTime: newResetTime });
-      saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
-      return 0;
-    }
-    
-    return dailyUsage;
-  },
-}));
+    canMakeRequest: () => {
+      const { dailyUsage, maxDailyLimit, resetTime } = get();
+      
+      // Check if we need to reset
+      if (Date.now() > resetTime) {
+        const newResetTime = getTomorrowMidnight();
+        set({ dailyUsage: 0, resetTime: newResetTime });
+        saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
+        return true;
+      }
+      
+      return dailyUsage < maxDailyLimit;
+    },
+
+    incrementUsage: () => {
+      const { dailyUsage, resetTime } = get();
+      const newCount = dailyUsage + 1;
+      
+      set({ dailyUsage: newCount });
+      saveRateLimitDataToStorage({ count: newCount, resetTime });
+    },
+
+    getRemainingRequests: () => {
+      const { dailyUsage, maxDailyLimit, resetTime } = get();
+      
+      // Check if we need to reset
+      if (Date.now() > resetTime) {
+        const newResetTime = getTomorrowMidnight();
+        set({ dailyUsage: 0, resetTime: newResetTime });
+        saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
+        return maxDailyLimit;
+      }
+      
+      return Math.max(0, maxDailyLimit - dailyUsage);
+    },
+
+    getResetTime: () => {
+      const { resetTime } = get();
+
+      if (Date.now() > resetTime) {
+        const newResetTime = getTomorrowMidnight();
+        set({ dailyUsage: 0, resetTime: newResetTime });
+        saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
+        return newResetTime;
+      }
+      return resetTime;
+    },
+
+    getCurrentCount: () => {
+      const { dailyUsage, resetTime } = get();
+      
+      // Check if we need to reset
+      if (Date.now() > resetTime) {
+        const newResetTime = getTomorrowMidnight();
+        set({ dailyUsage: 0, resetTime: newResetTime });
+        saveRateLimitDataToStorage({ count: 0, resetTime: newResetTime });
+        return 0;
+      }
+      
+      return dailyUsage;
+    },
+
+    initializeFromStorage: () => {
+      const initialState = getInitialState();
+      set({ dailyUsage: initialState.dailyUsage, resetTime: initialState.resetTime });
+    },
+  };
+});
