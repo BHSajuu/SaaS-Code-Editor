@@ -36,8 +36,12 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
   const codeUpdateTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const monacoRef = useRef<Monaco | null>(null);
-
   const [localCode, setLocalCode] = useState(session?.code || "");
+  
+
+  const [isReadOnly, setIsReadOnly] = useState(false);
+
+
   const language = session?.language || "javascript";
   const sessionCode = session?.code;
 
@@ -65,8 +69,24 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     }
   }, [session]);
 
-  // 1. Listen for local editor changes
+  useEffect(() => {
+    if (!session || !user || !editorRef.current) return;
+    
+    const isOwner = session.ownerId === user.id;
+    const isPublic = session.isPublic;
+    const readOnly = !isOwner && !isPublic;
+
+    setIsReadOnly(readOnly);
+    editorRef.current.updateOptions({ readOnly: readOnly });
+
+  }, [session, user, editorRef.current]);
+
   const handleEditorChange: OnChange = (value) => {
+    if (isReadOnly) {
+      editorRef.current?.setValue(sessionCode || "");
+      return;
+    }
+
     const newCode = value || "";
     setLocalCode(newCode); 
 
@@ -79,12 +99,9 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     }, 300);
   };
 
-  // 2. Listen for remote code changes
   useEffect(() => {
     if (sessionCode !== undefined && editorRef.current) {
- 
       const currentEditorCode = editorRef.current.getValue();
-
       if (sessionCode !== currentEditorCode) {
         const selection = editorRef.current.getSelection();
         editorRef.current.setValue(sessionCode);
@@ -96,7 +113,6 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     }
   }, [sessionCode]); 
 
-  // 3. Listen for local activity
   useEffect(() => {
     if (!editorRef.current || !sessionId) return;
 
@@ -104,6 +120,10 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
 
     const handleActivity = () => {
       if (activityTimerRef.current) return;
+      
+   
+      if (isReadOnly) return; 
+      
 
       activityTimerRef.current = setTimeout(() => {
         const cursorPosition = editor.getPosition();
@@ -137,9 +157,9 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
         clearTimeout(activityTimerRef.current);
       }
     };
-  }, [editorRef.current, sessionId, updateActivity]);
+  }, [editorRef.current, sessionId, updateActivity, isReadOnly]); 
 
-  // 4. Listen for remote activity
+
   useEffect(() => {
     if (!editorRef.current || !session?.activeUsers || !user?.id || !monacoRef.current) {
       return;
@@ -154,7 +174,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
     otherUsers.forEach((u, index) => {
       const colorClass = `user-${index % 3}`;
 
-      // Render selection
+    
       if (
         u.selection &&
         (u.selection.startLineNumber !== u.selection.endLineNumber ||
@@ -171,7 +191,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
         });
       }
 
-      // Render cursor
+  
       if (u.cursor) {
         newDecorations.push({
           range: new monaco.Range(
@@ -194,7 +214,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
 
   }, [session?.activeUsers, user?.id, monacoRef]);
 
-  // 5. Cleanup timers and decorations
+
   useEffect(() => {
     return () => {
       if (activityTimerRef.current) {
@@ -208,8 +228,6 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
       }
     };
   }, []);
-
-
 
   if (!mounted || !session) return <EditorPanelSkeleton />;
 
@@ -243,6 +261,7 @@ export default function SessionEditorPanel({ sessionId }: { sessionId: Id<"sessi
               automaticLayout: true,
               scrollBeyondLastLine: false,
               padding: { top: 16, bottom: 16 },
+              readOnly: isReadOnly,
             }}
           />
         </div>
