@@ -58,6 +58,7 @@ export default defineSchema({
     language: v.string(),
     ownerId: v.string(),
     ownerName: v.string(),
+    isPublic: v.boolean(),
     activeUsers: v.array(
       v.object({
         userId: v.string(),

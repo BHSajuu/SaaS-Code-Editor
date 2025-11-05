@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-// Get session details
+
 export const get = query({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, args) => {
@@ -13,7 +13,7 @@ export const get = query({
   },
 });
 
-// Create a new session
+
 export const createSession = mutation({
   args: {
     code: v.string(),
@@ -41,14 +41,15 @@ export const createSession = mutation({
       language: args.language,
       ownerId: user.userId,
       ownerName: user.name,
-      activeUsers: [], // Start with no active users
+      activeUsers: [], 
+      isPublic: false,
     });
 
     return sessionId;
   },
 });
 
-// Join a session
+
 export const joinSession = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, args) => {
@@ -85,7 +86,7 @@ export const joinSession = mutation({
   },
 });
 
-// Leave a session
+
 export const leaveSession = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, args) => {
@@ -127,8 +128,9 @@ export const updateCode = mutation({
       throw new ConvexError("Session not found");
     }
 
-    // Optional: You could add a check here to ensure
-    // only active users can edit, but for simplicity, we'll allow it.
+    if (session.ownerId !== identity.subject && !session.isPublic) {
+      throw new ConvexError("You don't have permission to edit this session.");
+    }
 
     await ctx.db.patch(args.sessionId, {
       code: args.code,
@@ -151,6 +153,10 @@ export const updateUserActivity = mutation({
     const session = await ctx.db.get(args.sessionId);
     if (!session) {
       throw new ConvexError("Session not found");
+    }
+     
+    if (session.ownerId !== identity.subject && !session.isPublic) {
+      return; 
     }
 
     // Find the current user in the activeUsers array
@@ -175,5 +181,30 @@ export const updateUserActivity = mutation({
     await ctx.db.patch(args.sessionId, {
       activeUsers: session.activeUsers,
     });
+  },
+});
+
+export const updateSessionAccess = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    isPublic: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) {
+      throw new ConvexError("Session not found");
+    }
+
+    // Only the owner can change this
+    if (session.ownerId !== identity.subject) {
+      throw new ConvexError("Only the session owner can change access.");
+    }
+
+    await ctx.db.patch(args.sessionId, { isPublic: args.isPublic });
   },
 });
