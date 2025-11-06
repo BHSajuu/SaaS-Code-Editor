@@ -1,7 +1,7 @@
 
 
 <div align="center">
-  <img src="public/logo.png" alt="CodeNexta Logo" width="120" />
+
   <h1>
     <b>CodeNexta</b>
   </h1>
