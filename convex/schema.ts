@@ -10,6 +10,8 @@ export default defineSchema({
     proSince: v.optional(v.number()),
     lemonSqueezyCustomerId: v.optional(v.string()),
     lemonSqueezyOrderId: v.optional(v.string()),
+    trialEndsAt: v.optional(v.number()),
+    hasSeenTrialModal: v.optional(v.boolean()),
   }).index("by_user_id", ["userId"])
     .searchIndex("search_name", {
       searchField: "name",

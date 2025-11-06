@@ -8,14 +8,20 @@ import { api } from "../../../../convex/_generated/api";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useModalStore } from "@/store/useModalStore";
 
-export default function StartSessionButton() {
+export default function StartSessionButton({hasAccess}: {hasAccess: boolean}) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { getCode, language } = useCodeEditorStore();
   const createSession = useMutation(api.sessions.createSession);
+  const { openTrialEnded } = useModalStore();
 
   const handleStartSession = async () => {
+    if (!hasAccess) {
+      openTrialEnded();
+      return;
+    }
     setIsLoading(true);
     try {
       const code = getCode();

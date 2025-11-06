@@ -1,13 +1,13 @@
 import { ConvexError, v } from "convex/values"
 import { mutation, query } from "./_generated/server"
 import { paginationOptsValidator } from "convex/server";
+import { userHasAccess } from "./users";
 
 
 export const saveExecution = mutation({
   args: {
     language: v.string(),
     code: v.string(),
-    // we could have either one them or both at a time .
     output: v.optional(v.string()),
     error: v.optional(v.string()),
   },
@@ -24,7 +24,11 @@ export const saveExecution = mutation({
       .filter((q) => q.eq(q.field("userId"), identity.subject))
       .first();
 
-    if (!user?.isPro && args.language !== "javascript") {
+    if (!user) { 
+      throw new ConvexError("User not found");
+    }
+
+    if (!userHasAccess(user) && args.language !== "javascript") {
       throw new ConvexError("Pro Subscription is required to use this language");
     }
 

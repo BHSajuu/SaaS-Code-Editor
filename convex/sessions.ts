@@ -2,6 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { userHasAccess } from "./users";
 
 
 export const get = query({
@@ -36,8 +37,11 @@ export const createSession = mutation({
     if (!user) {
       throw new ConvexError("User not found");
     }
+    
+    if (!userHasAccess(user)) {
+      throw new ConvexError("Upgrade to Pro to create a live session.");
+    }
 
-    // Create the session
     const sessionId = await ctx.db.insert("sessions", {
       code: args.code,
       language: args.language,
@@ -59,6 +63,19 @@ export const joinSession = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new ConvexError("You must be logged in to join a session");
+    }
+    
+    const user = await ctx.db
+                          .query("users")
+                          .withIndex("by_user_id")
+                          .filter((q)=> q.eq(q.field("userId"), identity.subject))
+                          .first();
+     if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    if (!userHasAccess(user)) {
+      throw new ConvexError("Upgrade to Pro to join a live session.");
     }
 
     const session = await ctx.db.get(args.sessionId);

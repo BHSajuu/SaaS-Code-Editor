@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LogOut, Share2 } from "lucide-react";
-import { SignedIn } from "@clerk/nextjs";
+import { SignedIn, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
@@ -24,7 +24,15 @@ export default function SessionHeader({ sessionId }: { sessionId: Id<"sessions">
   const handleLeaveSession = () => {
     router.push("/editor");
   };
-
+const { user } = useUser();
+  const convexUser = useQuery(api.users.getUser, {
+    userId: user?.id || "", 
+  });
+  
+  const trialEndsAt = convexUser?.trialEndsAt ?? 0;
+  const isPro = convexUser?.isPro ?? false;
+  const isInTrial = trialEndsAt > Date.now();
+  const hasAccess = isPro || isInTrial;
   return (
     <>
       <div className="relative z-10">
@@ -50,7 +58,7 @@ export default function SessionHeader({ sessionId }: { sessionId: Id<"sessions">
               </div>
             </Link>
             <nav className="flex items-center space-x-10">
-              <CodingBuddy />
+              <CodingBuddy  hasAccess={hasAccess}/>
             </nav>
           </div>
 

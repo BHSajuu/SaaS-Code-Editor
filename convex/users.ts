@@ -1,6 +1,14 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 
+
+export const userHasAccess = (user: Doc<"users">): boolean =>{
+  const trialEndsAt = user.trialEndsAt ?? 0;
+  const isInTrial = trialEndsAt > Date.now();
+  
+  return user.isPro || isInTrial;
+};
 
 export const syncUser = mutation({
       args: {
@@ -15,13 +23,36 @@ export const syncUser = mutation({
       .first();
 
     if (!existingUser) {
+      
+      const FIVE_DAYS_IN_MS = 5 * 24 * 60 * 60 * 1000;
+
       await ctx.db.insert("users", {
         userId: args.userId,
         email: args.email,
         name: args.name,
         isPro: false,
+        trialEndsAt: Date.now() + FIVE_DAYS_IN_MS,
+        hasSeenTrialModal: false,
       });
     }
+  },
+});
+
+export const markTrialModalAsSeen = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError("Not authenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_user_id")
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .first();
+
+    if (!user) throw new ConvexError("User not found");
+
+    await ctx.db.patch(user._id, { hasSeenTrialModal: true });
   },
 });
 

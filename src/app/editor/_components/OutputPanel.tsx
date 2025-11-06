@@ -5,12 +5,15 @@ import { AlertTriangle, CheckCircle, Clock, Copy, Loader, Sparkles, Terminal, Za
 import { useState } from "react";
 import RunningCodeSkeleton from "./RunningCodeSkeleton";
 import toast from "react-hot-toast";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import LoginButton from "@/components/LoginButton";
 import { Button } from "@/components/ui/button";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useGeminiStore } from "@/store/useGeminiStore";
 import RateLimitModal from "@/components/RateLimitModal";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { useModalStore } from "@/store/useModalStore";
 
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
@@ -29,9 +32,20 @@ function OutputPanel() {
     getCurrentCount, 
     maxDailyLimit,
   } = useGeminiStore();
-   
+ 
+  const { user } = useUser(); 
+  const convexUser = useQuery(api.users.getUser, { 
+    userId: user?.id || "",
+  });
+
+  const trialEndsAt = convexUser?.trialEndsAt ?? 0;
+  const isPro = convexUser?.isPro ?? false;
+  const isInTrial = trialEndsAt > Date.now();
+  const hasAccess = isPro || isInTrial;
 
   const hasContent = error || output;
+  
+  const { openTrialEnded } = useModalStore();
 
   const handleCopy = async () => {
     if (!hasContent) return;
@@ -44,6 +58,11 @@ function OutputPanel() {
 
 
   const handleAIforError = async () => {
+    if (!hasAccess) {
+     openTrialEnded();
+      return;
+    }
+    
     if (!hasContent) return;
     
      // Check rate limit before making request

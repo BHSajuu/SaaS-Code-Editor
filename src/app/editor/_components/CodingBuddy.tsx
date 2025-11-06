@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from '@/components/ui/button';
-import { Brain, X, Send, Loader, CircleX } from 'lucide-react';
+import { Brain, X, Send, Loader, CircleX, Sparkles } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useCodeEditorStore } from '@/store/useCodeEditorStore';
@@ -11,17 +11,19 @@ import { CodeBlock, Message } from '@/types';
 import AIMessage from './AIMessage';
 import RateLimitModal from '@/components/RateLimitModal';
 import { useGeminiStore } from '@/store/useGeminiStore';
+import Link from 'next/link';
+import { useModalStore } from '@/store/useModalStore';
 
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!);
 
-function CodingBuddy() {
+function CodingBuddy({hasAccess}:{hasAccess : boolean}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
-
+  
   // Refs for auto-scrolling and input focus
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -34,6 +36,8 @@ function CodingBuddy() {
     getCurrentCount, 
     maxDailyLimit,
   } = useGeminiStore();
+  
+  const { openTrialEnded } = useModalStore();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -85,6 +89,11 @@ function CodingBuddy() {
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+    
+    if (!hasAccess) {
+      openTrialEnded();
+      return;
+    }
 
     // Check rate limit before making request
     if (!canMakeRequest()) {
@@ -192,10 +201,15 @@ function CodingBuddy() {
 
   return (
     <>
-      {/* Trigger Button */}
       <Button
         className="animated-brdr-button"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          if (!hasAccess) { 
+            openTrialEnded();
+            return;
+          }
+          setIsOpen(true);
+        }}
       >
         <style>{`
           @property --angle {
@@ -368,7 +382,8 @@ function CodingBuddy() {
 
               {/* Input Area */}
               <div className="p-6 border-t border-gray-800/50 bg-gray-900/20">
-                <div className="flex items-end gap-3">
+                {hasAccess? (
+                  <div className="flex items-end gap-3">
                   <div className="flex-1 relative">
                     <textarea
                       ref={inputRef}
@@ -396,6 +411,19 @@ function CodingBuddy() {
                     )}
                   </button>
                 </div>
+                ):(
+                  <div className="text-center">
+                    <p className="text-gray-400 mb-4">
+                      Upgrade to Pro to use the AI Coding Assistant.
+                    </p>
+                    <Link href="/pricing">
+                      <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all py-3 px-6 text-base font-semibold shadow-lg">
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Upgrade Now
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>

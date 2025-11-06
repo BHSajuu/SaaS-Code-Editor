@@ -20,6 +20,11 @@ function Header() {
   const convexUser = useQuery(api.users.getUser, {
     userId: user?.id || "", 
   });
+  
+  const trialEndsAt = convexUser?.trialEndsAt ?? 0;
+  const isPro = convexUser?.isPro ?? false;
+  const isInTrial = trialEndsAt > Date.now();
+  const hasAccess = isPro || isInTrial;
 
   return (
     <div className="relative z-10">
@@ -80,14 +85,14 @@ function Header() {
                 Snippets
               </span>
             </Link>
-            <CodingBuddy />
+            <CodingBuddy hasAccess={hasAccess}/>
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
             <ThemeSelector />
-            <LanguageSelector hasAccess={Boolean(convexUser?.isPro)} />
+            <LanguageSelector hasAccess={hasAccess} />
           </div>
 
           {!convexUser?.isPro && (
@@ -105,7 +110,7 @@ function Header() {
           )}
 
           <SignedIn>
-            <StartSessionButton />
+            <StartSessionButton hasAccess={hasAccess} />
             <RunButton />
           </SignedIn>
 
