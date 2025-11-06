@@ -1,3 +1,5 @@
+![Hero Page](public/hero.png)
+![Editor Page](public/editor.png)
 
 ## CodeNexta 
    A Next.js-based online code editor SaaS platform for developers to collaborate and share their code snippets.
