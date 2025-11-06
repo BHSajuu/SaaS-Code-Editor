@@ -80,24 +80,24 @@ This project is built with a modern, serverless-first, and type-safe stack.
 | **UI** | [**Tailwind CSS**](https://tailwindcss.com/) & [**shadcn/ui**](https://ui.shadcn.com/) |
 | **Animation** | [**Framer Motion**](https://www.framer.com/motion/) |
 | **State Management** | [**Zustand**](https://zustand-demo.pmnd.rs/) |
-| **Styling** | [**Tailwind Merge**](https://github.com/dcastil/tailwind-merge) & [**cva**](https://cva.style/) |
-| **Form Handling** | [**React Hook Form**](https://react-hook-form.com/) & [**Zod**](https://zod.dev/) |
+
 
 ---
 
 ## 📸 Screenshots
 
-| Landing Page |
-| :---: |
-| <img src="public/hero.png" alt="CodeNexta Hero Image" /> |
-
-| Code Editor |
+| Code Editor  |
 | :---: |
 | <img src="public/editor.png" alt="CodeNexta Editor" /> |
 
-| **User Profile (Suggestion)** |
+| Snippets Page |
 | :---: |
-| (Your `src/app/profile/page.tsx` is fantastic! Add a screenshot of it here to show off the user dashboard and stats.) |
+| <img src="public/snippets.png" alt="CodeNexta Snippets Page" /> |
+
+| Proflie Page |
+| :---: |
+| <img src="public/profile.png" alt="CodeNexta Proflie Page" /> |
+
 
 ---
 
